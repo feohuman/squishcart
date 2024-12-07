@@ -24,3 +24,4 @@ class Product:
         }
 
 
+class Customer:

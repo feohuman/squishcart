@@ -3,9 +3,7 @@ import streamlit as st
 from PIL import Image
 import json
 import os
-import tokenize
 
-from pygments.lexers.robotframework import Tokenizer
 from streamlit import button
 
 from scanner import *
@@ -16,14 +14,6 @@ if "logged_in" not in st.session_state:
     st.session_state.logged_in = False
 if "cart" not in st.session_state:
     st.session_state.cart = {}
-
-# Load data from JSON file
-def load_data():
-    with open('data.json', 'r') as f:
-        data = json.load(f)
-    return data
-
-data = load_data()
 
 # Login function
 def display_login():
@@ -50,10 +40,17 @@ def logout():
     st.success("You have been logged out.")
 
 
+# Load data from JSON file
+def load_data():
+    with open('data.json', 'r') as f:
+        data = json.load(f)
+    return data
+
+data = load_data()
 
 # Home page (with recommendations)
 def display_home():
-    st.title("🌟 Welcome to the Retail Store!")
+    st.title("🌟 Welcome to Mega!")
     st.write("Explore our recommended products and try out our delicious recipes.")
 
     # Displaying Recommended Products

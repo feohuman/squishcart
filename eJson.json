@@ -1,0 +1,9 @@
+{
+  "product": {
+      "name": "Laptop",
+      "price": 999.99,
+      "image": "images/laptop.jpg",
+      "lot": "1234",
+      "data_exp": 0
+    }
+}
