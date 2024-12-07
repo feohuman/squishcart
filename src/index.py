@@ -3,12 +3,17 @@ import streamlit as st
 from PIL import Image
 import json
 import os
+import tokenize
 
+from pygments.lexers.robotframework import Tokenizer
 from streamlit import button
 
 from scanner import *
+from objects import *
 
 # Initialize session state for shopping cart
+if "logged_in" not in st.session_state:
+    st.session_state.logged_in = False
 if "cart" not in st.session_state:
     st.session_state.cart = {}
 
@@ -19,6 +24,32 @@ def load_data():
     return data
 
 data = load_data()
+
+# Login function
+def display_login():
+    placeholder = st.empty()
+    with placeholder.form("login"):
+        st.markdown("#### Enter your credentials")
+        email = st.text_input("Email")
+        password = st.text_input("Password", type="password")
+        submit = st.form_submit_button("Login")
+
+    if submit:
+        if email == "admin" and password == "admin":
+            st.session_state.logged_in = True  # Set logged-in flag
+            placeholder.empty()
+            st.success("Login successful")
+            st.rerun()  # Reload the app with logged-in state
+        else:
+            st.error("Login failed. Please try again.")
+
+# Logout function
+def logout():
+    st.session_state.logged_in = False
+    st.session_state.cart = {}
+    st.success("You have been logged out.")
+
+
 
 # Home page (with recommendations)
 def display_home():
@@ -171,23 +202,22 @@ def display_cart():
 def display_scanner():
     st.title("Scan a Product!")
     decoded = scan_code()
-    st.text(decoded)
-
-
-# Sidebar menu for navigation
-st.sidebar.title("Retail App")
-
-scan = st.sidebar.button("Scanner")
-
-menu = st.sidebar.radio("Navigate", ["Home", "Products", "Shopping Cart"])
-
-
+    Tokenizer(decoded);
 # Display content based on the menu
-if scan:
-    display_scanner()
-if menu == "Home":
-    display_home()
-elif menu == "Products":
-    display_products()
-elif menu == "Shopping Cart":
-    display_cart()
+if st.session_state.logged_in:
+    st.sidebar.title("Retail App")
+    st.sidebar.write("Logged in as: admin")
+    st.sidebar.button("🔓 Logout", on_click=logout)
+    scan = st.sidebar.button("Scanner")
+    st.sidebar.empty()
+    menu = st.sidebar.radio("Navigate", ["Home", "Products", "Shopping Cart"])
+    if scan:
+        display_scanner()
+    if menu == "Home":
+        display_home()
+    elif menu == "Products":
+        display_products()
+    elif menu == "Shopping Cart":
+        display_cart()
+else:
+    display_login()
