@@ -202,7 +202,7 @@ def display_cart():
 def display_scanner():
     st.title("Scan a Product!")
     decoded = scan_code()
-    Tokenizer(decoded);
+
 # Display content based on the menu
 if st.session_state.logged_in:
     st.sidebar.title("Retail App")
