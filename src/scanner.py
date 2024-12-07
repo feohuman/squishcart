@@ -9,7 +9,7 @@ def qr_code_reader(image):
         return data
     return None
 
-def scanner():
+def scan_code():
     cap = cv2.VideoCapture(0)
 
     st.title("Read product")
@@ -18,8 +18,6 @@ def scanner():
 
     stop_button_pressed = st.button("Stop")
 
-    qr_code_detected = False
-
     while cap.isOpened() and not stop_button_pressed:
         ret, image = cap.read()
         if not ret:
@@ -27,7 +25,6 @@ def scanner():
             break
         decoded = qr_code_reader(image)
         if decoded:
-            qr_code_detected = True
             st.text(decoded)
             cap.release()
             cv2.destroyAllWindows()
