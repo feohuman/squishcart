@@ -1,0 +1,32 @@
+{
+    "products": [
+        {
+        "name": "Smartphone",
+        "price": 699.99,
+        "image": "mere",
+        "number_of_products": 12,
+        "soonest_expiration_date": "12/07/25"
+        },
+        {
+        "name": "Laptop",
+        "price": 1299.99,
+        "image": "product_images/Laptop.jpg",
+        "number_of_products": 5,
+        "soonest_expiration_date": "12/12/25"
+        },
+        {
+        "name": "Tablet",
+        "price": 399.99,
+        "image": "product_images/Tablet.jpg",
+        "number_of_products": 8,
+        "soonest_expiration_date": "12/15/25"
+        }
+    ],
+    "recommended_products": ["Laptop", "Smartphone", "Headphones"],
+    "recipes": [
+      "Smartphone Smoothie - A refreshing blend of tech and taste!",
+      "Laptop Lasagna - A dish that's as powerful as your laptop!",
+      "Headphone Hummus - Perfect for your next listening party!"
+    ]
+  }
+  
