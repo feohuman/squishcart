@@ -54,17 +54,18 @@ class BasketUpdate(BaseModel):
     user_id: int
 
 class BasketItemCreate(BaseModel):
-    basket_id: int
     product_id: int
     quantity: int
 
 class BasketItemUpdate(BaseModel):
-    basket_id: int
     product_id: int
     quantity: int
     
 class StockUpdate(BaseModel):
     stock: int
+    
+class BasketItemRequest(BaseModel):
+    quantity: int
 
 @app.post("/register", response_model=UserOut)
 def register(user: UserCreate, db: Session = Depends(get_db)):
@@ -88,8 +89,7 @@ def login(login_data: LoginRequest, db: Session = Depends(get_db)):
 
 @app.post("/logout")
 def logout(token: str = Depends(oauth2_scheme)):
-    # JWT doesn't require a server-side logout mechanism, but you can implement blacklisting tokens if needed
-    verify_token(token)  # If this line runs without an exception, the token is valid
+    verify_token(token)
     return {"msg": "Successfully logged out"}
 
 @app.get("/users/me", response_model=UserOut)
@@ -136,6 +136,14 @@ def read_user_basket(user_id: int, db: Session = Depends(get_db)):
 def read_products(skip: int = 0, limit: int = 10, db: Session = Depends(get_db)):
     products = db.query(Product).offset(skip).limit(limit).all()
     return products
+
+# get product by full name, price and expiration date
+@app.get("/products/{name}/{price}/{expiration_date}")
+def read_product_by_name_price_expiration_date(name: str, price: float, expiration_date: date, db: Session = Depends(get_db)):
+    product = db.query(Product).filter(Product.name == name, Product.price == price, Product.expiration_date == expiration_date).first()
+    if not product:
+        raise HTTPException(status_code=404, detail="Product not found")
+    return product
 
 @app.get("/products/{product_id}")
 def read_product(product_id: int, db: Session = Depends(get_db)):
@@ -214,29 +222,58 @@ def create_basket(basket: BasketCreate, db: Session = Depends(get_db)):
     db.refresh(new_basket)
     return new_basket
 
-@app.put("/basket/{basket_id}")
-def update_basket(basket_id: int, basket: BasketUpdate, db: Session = Depends(get_db)):
-    db_basket = db.query(Basket).filter(Basket.id == basket_id).first()
+# update basket by getting user's basket from token
+@app.put("/basket")
+def update_basket(basket: BasketUpdate, token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)):
+    payload = verify_token(token)
+    username = payload.get("sub")
+    if not username:
+        raise HTTPException(status_code=401, detail="Invalid token")
+    
+    user = db.query(User).filter(User.username == username).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    db_basket = db.query(Basket).filter(Basket.user_id == user.id).first()
     if not db_basket:
         raise HTTPException(status_code=404, detail="Basket not found")
+    
     for key, value in basket.dict().items():
         setattr(db_basket, key, value)
     db.commit()
     db.refresh(db_basket)
     return db_basket
 
-@app.delete("/basket/{basket_id}")
-def delete_basket(basket_id: int, db: Session = Depends(get_db)):
-    db_basket = db.query(Basket).filter(Basket.id == basket_id).first()
+@app.delete("/basket")
+def delete_basket(token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)):
+    payload = verify_token(token)
+    username = payload.get("sub")
+    if not username:
+        raise HTTPException(status_code=401, detail="Invalid token")
+    
+    user = db.query(User).filter(User.username == username).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    db_basket = db.query(Basket).filter(Basket.user_id == user.id).first()
     if not db_basket:
         raise HTTPException(status_code=404, detail="Basket not found")
     db.delete(db_basket)
     db.commit()
     return {"msg": "Basket deleted"}
 
-@app.post("/basket/{basket_id}/items")
-def add_basket_item(basket_id: int, item: BasketItemCreate, db: Session = Depends(get_db)):
-    db_basket = db.query(Basket).filter(Basket.id == basket_id).first()
+@app.post("/basket/items")
+def add_basket_item(item: BasketItemCreate, token: str = Depends(oauth2_scheme) ,db: Session = Depends(get_db)):
+    payload = verify_token(token)
+    username = payload.get("sub")
+    if not username:
+        raise HTTPException(status_code=401, detail="Invalid token")
+    
+    user = db.query(User).filter(User.username == username).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    db_basket = db.query(Basket).filter(Basket.user_id == user.id).first()
     if not db_basket:
         raise HTTPException(status_code=404, detail="Basket not found")
     db_product = db.query(Product).filter(Product.id == item.product_id).first()
@@ -249,8 +286,9 @@ def add_basket_item(basket_id: int, item: BasketItemCreate, db: Session = Depend
     
     db_product.stock -= item.quantity
     # if item already exists in the basket, update the quantity and total price of basket item and basket
-    db_item = db.query(BasketItem).filter(BasketItem.basket_id == basket_id, BasketItem.product_id == item.product_id).first()
+    db_item = db.query(BasketItem).filter(BasketItem.basket_id == db_basket.id, BasketItem.product_id == item.product_id).first()
     if db_item:
+        db_item.basket_id = db_basket.id
         db_item.quantity += item.quantity
         db_item.total_price += db_product.price * item.quantity
         db_basket.total_price += db_product.price * item.quantity
@@ -260,14 +298,24 @@ def add_basket_item(basket_id: int, item: BasketItemCreate, db: Session = Depend
         return db_item
     
     new_item = BasketItem(**item.dict())
+    new_item.basket_id = db_basket.id
     db.add(new_item)
     db.commit()
     db.refresh(new_item)
     return new_item
 
-@app.put("/basket/{basket_id}/items/{item_id}")
-def update_basket_item(basket_id: int, item_id: int, item: BasketItemUpdate, db: Session = Depends(get_db)):
-    db_item = db.query(BasketItem).filter(BasketItem.id == item_id).first()
+@app.put("/basket/items/{item_id}")
+def update_basket_item(item_id: int, item: BasketItemUpdate, token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)):
+    payload = verify_token(token)
+    username = payload.get("sub")
+    if not username:
+        raise HTTPException(status_code=401, detail="Invalid token")
+    
+    user = db.query(User).filter(User.username == username).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    db_basket = db.query(Basket).filter(Basket.user_id == user.id).first()
     if not db_item:
         raise HTTPException(status_code=404, detail="Item not found")
     for key, value in item.dict().items():
@@ -276,14 +324,24 @@ def update_basket_item(basket_id: int, item_id: int, item: BasketItemUpdate, db:
     db.refresh(db_item)
     return db_item
 
-@app.delete("/basket/{basket_id}/items/{item_id}")
-def delete_basket_item(basket_id: int, item_id: int, db: Session = Depends(get_db)):
+@app.delete("/basket/items/{item_id}")
+def delete_basket_item(item_id: int, token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)):
+    payload = verify_token(token)
+    username = payload.get("sub")
+    if not username:
+        raise HTTPException(status_code=401, detail="Invalid token")
+    
+    user = db.query(User).filter(User.username == username).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
     db_item = db.query(BasketItem).filter(BasketItem.id == item_id).first()
     if not db_item:
         raise HTTPException(status_code=404, detail="Item not found")
+    
     db_product = db.query(Product).filter(Product.id == db_item.product_id).first()
     db_product.stock += db_item.quantity
-    db_basket = db.query(Basket).filter(Basket.id == basket_id).first()
+    db_basket = db.query(Basket).filter(Basket.id == db_item.basket_id).first()
     db_basket.total_price -= db_item.total_price
     db_basket.quantity -= db_item.quantity
     db.delete(db_item)
@@ -291,8 +349,21 @@ def delete_basket_item(basket_id: int, item_id: int, db: Session = Depends(get_d
     return {"msg": "Item deleted"}
 
 # remove n items from basket (n as link parameter)
-@app.put("/basket/{basket_id}/items/{item_id}/remove/{quantity}")
-def remove_basket_item(basket_id: int, item_id: int, quantity: int, db: Session = Depends(get_db)):
+@app.put("/basket/items/{item_id}/remove/{quantity}")
+def remove_basket_item(item_id: int, quantity: int, token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)):
+    payload = verify_token(token)
+    username = payload.get("sub")
+    if not username:
+        raise HTTPException(status_code=401, detail="Invalid token")
+    
+    user = db.query(User).filter(User.username == username).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    db_basket = db.query(Basket).filter(Basket.user_id == user.id).first()
+    if not db_basket:
+        raise HTTPException(status_code=404, detail="Basket not found")
+    
     db_item = db.query(BasketItem).filter(BasketItem.id == item_id).first()
     if not db_item:
         raise HTTPException(status_code=404, detail="Item not found")
@@ -310,21 +381,86 @@ def remove_basket_item(basket_id: int, item_id: int, quantity: int, db: Session 
     db.refresh(db_item)
     return db_item
 
-@app.get("/basket/{basket_id}/items")
-def read_basket_items(basket_id: int, db: Session = Depends(get_db)):
-    items = db.query(BasketItem).filter(BasketItem.basket_id == basket_id).all()
+# add basket item by name, price and expiration date, getting basket id from token
+@app.post("/basket/items/{name}/{price}/{expiration_date}")
+def add_basket_item_by_name_price_expiration_date(
+    name: str,
+    price: float,
+    expiration_date: date,
+    request: BasketItemRequest,
+    db: Session = Depends(get_db),
+    token: str = Depends(oauth2_scheme)
+):
+    payload = verify_token(token)
+    username = payload.get("sub")
+    if not username:
+        raise HTTPException(status_code=401, detail="Invalid token")
+    
+    user = db.query(User).filter(User.username == username).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    db_basket = db.query(Basket).filter(Basket.user_id == user.id).first()
+    if not db_basket:
+        raise HTTPException(status_code=404, detail="Basket not found")
+    
+    quantity = request.quantity
+    db_product = db.query(Product).filter(Product.name == name, Product.price == price, Product.expiration_date == expiration_date).first()
+    if not db_product:
+        raise HTTPException(status_code=404, detail="Product not found")
+    
+    # check if enough stock is available
+    if db_product.stock < quantity:
+        raise HTTPException(status_code=400, detail="Not enough stock available")
+    
+    db_product.stock -= quantity
+    # if item already exists in the basket, update the quantity and total price of basket item and basket
+    db_item = db.query(BasketItem).filter(BasketItem.basket_id == db_basket.id, BasketItem.product_id == db_product.id).first()
+    if db_item:
+        db_item.quantity += quantity
+        db_item.total_price += db_product.price * quantity
+        db_basket.total_price += db_product.price * quantity
+        db_basket.quantity += quantity
+        db.commit()
+        db.refresh(db_item)
+        return db_item
+    
+    new_item = BasketItem(basket_id=basket_id, product_id=db_product.id, quantity=quantity)
+    db.add(new_item)
+    db.commit()
+    db.refresh(new_item)
+    return new_item
+
+@app.get("/basket/items")
+def read_basket_items(token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)):
+    payload = verify_token(token)
+    username = payload.get("sub")
+    if not username:
+        raise HTTPException(status_code=401, detail="Invalid token")
+    
+    user = db.query(User).filter(User.username == username).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    basket = db.query(Basket).filter(Basket.user_id == user.id).first()
+    if not basket:
+        raise HTTPException(status_code=404, detail="Basket not found")
+    
+    items = db.query(BasketItem).filter(BasketItem.basket_id == basket.id).all()
     return items
 
-@app.get("/basket/{basket_id}/items/{item_id}")
-def read_basket_item(basket_id: int, item_id: int, db: Session = Depends(get_db)):
-    item = db.query(BasketItem).filter(BasketItem.id == item_id).first()
-    if not item:
-        raise HTTPException(status_code=404, detail="Item not found")
-    return item
-
-@app.get("/basket/{basket_id}")
-def read_basket(basket_id: int, db: Session = Depends(get_db)):
-    basket = db.query(Basket).filter(Basket.id == basket_id).first()
+@app.get("/basket")
+def read_basket(token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)):
+    payload = verify_token(token)
+    username = payload.get("sub")
+    if not username:
+        raise HTTPException(status_code=401, detail="Invalid token")
+    
+    user = db.query(User).filter(User.username == username).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    basket = db.query(Basket).filter(Basket.user_id == user.id).first()
     if not basket:
         raise HTTPException(status_code=404, detail="Basket not found")
     return basket
