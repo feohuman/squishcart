@@ -1,32 +1,55 @@
 {
     "products": [
         {
-        "name": "Smartphone",
-        "price": 699.99,
-        "image": "mere",
-        "number_of_products": 12,
-        "soonest_expiration_date": "12/07/25"
+            "name": "Milk",
+            "price": 9.99,
+            "image": "product_images/Milk.jpg",
+            "number_of_products": 4,
+            "soonest_expiration_date": "12/07/25"
         },
         {
-        "name": "Laptop",
-        "price": 1299.99,
-        "image": "product_images/Laptop.jpg",
-        "number_of_products": 5,
-        "soonest_expiration_date": "12/12/25"
+            "name": "Eggs",
+            "price": 12.99,
+            "image": "product_images/Eggs.jpg",
+            "number_of_products": 4,
+            "soonest_expiration_date": "12/15/25"
         },
         {
-        "name": "Tablet",
-        "price": 399.99,
-        "image": "product_images/Tablet.jpg",
-        "number_of_products": 8,
-        "soonest_expiration_date": "12/15/25"
+            "name": "Flour",
+            "price": 6.99,
+            "image": "product_images/Flour.jpg",
+            "number_of_products": 36,
+            "soonest_expiration_date": "12/15/25"
+        },
+        {
+            "name": "Cheese",
+            "price": 15.99,
+            "image": "product_images/Cheese.jpg",
+            "number_of_products": 8,
+            "soonest_expiration_date": "12/15/25"
+        },
+        {
+            "name": "Ketchup",
+            "price": 12.0,
+            "image": "product_images/Ketchup.jpg",
+            "number_of_products": 83,
+            "soonest_expiration_date": "12/12/24"
         }
     ],
-    "recommended_products": ["Laptop", "Smartphone", "Headphones"],
+    "recommended_products": [
+        "Flour",
+        "Ketchup",
+        "Milk"
+    ],
     "recipes": [
-      "Smartphone Smoothie - A refreshing blend of tech and taste!",
-      "Laptop Lasagna - A dish that's as powerful as your laptop!",
-      "Headphone Hummus - Perfect for your next listening party!"
+        {
+            "name": "Apple pie",
+            "ingredients": [
+                "Apple",
+                "Flour",
+                "Milk",
+                "Eggs"
+            ]
+        }
     ]
-  }
-  
+}

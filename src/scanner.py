@@ -9,7 +9,7 @@ def qr_code_reader(image):
         return data
     return None
 
-def scan_code():
+def scan_code() -> str:
     cap = cv2.VideoCapture(0)
 
     frame_placeholder = st.empty()
@@ -23,7 +23,6 @@ def scan_code():
             break
         decoded = qr_code_reader(image)
         if decoded:
-            st.text(decoded)
             cap.release()
             cv2.destroyAllWindows()
             return decoded
@@ -32,5 +31,5 @@ def scan_code():
 
     cap.release()
     cv2.destroyAllWindows()
-    return None
+    return ""
 

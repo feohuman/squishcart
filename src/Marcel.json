@@ -1,0 +1,96 @@
+{
+    "username": "Marcel",
+    "history": [
+        {},
+        {
+            "name": "Eggs",
+            "quantity": 8,
+            "price": 0,
+            "expiration_date": null
+        },
+        {
+            "name": "Eggs",
+            "quantity": 7,
+            "price": 0,
+            "expiration_date": null
+        },
+        {
+            "name": "Milk",
+            "quantity": 8,
+            "price": 0,
+            "expiration_date": null
+        },
+        {
+            "name": "Flour",
+            "quantity": 39,
+            "price": 0,
+            "expiration_date": null
+        },
+        {
+            "name": "Eggs",
+            "quantity": 1,
+            "price": 0,
+            "expiration_date": null
+        },
+        {
+            "name": "Milk",
+            "quantity": 1,
+            "price": 0,
+            "expiration_date": null
+        },
+        {
+            "name": "Flour",
+            "quantity": 1,
+            "price": 0,
+            "expiration_date": null
+        },
+        {
+            "name": "Milk",
+            "quantity": 2,
+            "price": 0,
+            "expiration_date": null
+        },
+        {
+            "name": "Flour",
+            "quantity": 1,
+            "price": 0,
+            "expiration_date": null
+        },
+        {
+            "name": "Ketchup",
+            "quantity": 5,
+            "price": 0,
+            "expiration_date": null
+        },
+        {
+            "name": "Ketchup",
+            "quantity": 6,
+            "price": 0,
+            "expiration_date": null
+        },
+        {
+            "name": "Ketchup",
+            "quantity": 8,
+            "price": 0,
+            "expiration_date": null
+        },
+        {
+            "name": "Ketchup",
+            "quantity": 6,
+            "price": 0,
+            "expiration_date": null
+        },
+        {
+            "name": "Ketchup",
+            "quantity": 5,
+            "price": 0,
+            "expiration_date": null
+        },
+        {
+            "name": "Ketchup",
+            "quantity": 6,
+            "price": 0,
+            "expiration_date": null
+        }
+    ]
+}

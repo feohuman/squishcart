@@ -11,7 +11,6 @@ class User(Base):
     password = Column(String)
     is_admin = Column(Integer, default=0)
     
-    
 class Product(Base):
     __tablename__ = "products"
     
@@ -19,7 +18,7 @@ class Product(Base):
     name = Column(String, index=True)
     price = Column(Float, default=0)
     stock = Column(Integer, default=0)
-    category = Column(String)
+    image = Column(String)
     expiration_date = Column(Date)
     
 class Basket(Base):
