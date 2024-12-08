@@ -1,0 +1,6 @@
+[theme]
+primaryColor = "#ffffff"  # White for accent elements like sliders and checkboxes
+backgroundColor = "#eaf4e1"  # A soft, light green for the main background
+secondaryBackgroundColor = "#d0e6c1"  # A muted pastel green for the sidebar and widgets
+textColor = "#333333"  # A dark gray for text to ensure contrast and reduce strain
+font = "sans serif"  # Clean and modern font

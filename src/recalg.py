@@ -1,4 +1,7 @@
 import json
+from datetime import datetime
+
+
 def addpurchasetojson(purchase, jsonfile):
     print(purchase)
     with open(jsonfile, "r") as file:
@@ -18,7 +21,26 @@ def recalg(userfile, recipefile, favfile):
         for recipe in recipes['recipes']:
             if item['name'] in recipe['ingredients']:
                 recipe['popularity'] += item['quantity']
+                # add an extra popularity for soon to expire items ( less than a week )
+                # expiration date is dd/mm/yyyy
+                string_current_date = "13/12/2024"
+                string_expiration_date = item['expiration_date']
+                if string_expiration_date:
+                    print(string_expiration_date)
 
+                    expiration_date = datetime.strptime(string_expiration_date, "%d/%m/%Y")
+                    current_date = datetime.strptime(string_current_date, "%d/%m/%Y")
+
+                    # Calculate the difference in days
+                    difference = (expiration_date - current_date).days
+
+                    # Check if the difference is less than 5 days
+                    if 5 > difference > 0:
+                        print("mooore")
+                        recipe['popularity'] += 1
+
+
+    #
     recipe1 = recipes['recipes'][0]
     recipe2 = recipes['recipes'][1]
     recipe3 = recipes['recipes'][2]

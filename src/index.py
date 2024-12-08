@@ -11,7 +11,7 @@ from recalg import *
 
 import streamlit as st
 import plotly.express as px
-
+st.set_page_config(layout="wide")
 backend =  BackendMiddleware("http://0.0.0.0:8000")
 token = None
 
@@ -115,9 +115,9 @@ def display_admin_interface():
     st.subheader("Current Products")
     for product in data["products"]:
         st.write(f"**Name:** {product['name']}")
-        st.write(f"**Price:** ${product['price']:.2f}")
+        st.write(f"**Price:** LEI {product['price']:.2f}")
         st.write(f"**Stock:** {product['number_of_products']}")
-        st.write(f"**Soonest Expiration Date:** {product['soonest_expiration_date']}")
+        st.write(f"**Expiration Date:** {product['soonest_expiration_date']}")
         # st.image(product["image"], caption=product["name"], width=100)
         st.write("---")
 
@@ -128,7 +128,7 @@ def display_admin_interface():
         new_price = st.number_input("Product Price", min_value=0.0, step=0.01)
         new_stock = st.number_input("Stock Quantity", min_value=0, step=1)
         new_image = st.text_input("Image Path")
-        new_expiration_date = st.date_input("Soonest Expiration Date")
+        new_expiration_date = st.date_input("Expiration Date")
         submit_add = st.form_submit_button("Add Product")
 
         if submit_add:
@@ -163,7 +163,7 @@ def display_admin_interface():
         updated_price = st.number_input("New Price", value=product["price"], step=0.01)
         updated_stock = st.number_input("New Stock", value=product["number_of_products"], step=1)
         updated_expiration_date = st.text_input(
-            "New Soonest Expiration Date (MM/DD/YY)",
+            "New Expiration Date (MM/DD/YY)",
             value=product["soonest_expiration_date"],
         )
         if st.button("Update Product"):
@@ -182,6 +182,7 @@ def display_admin_interface():
 
 # Home page (with recommendations)
 def display_home():
+
     st.title("🌟 Welcome to Mega!")
     st.write("Explore our recommended products and try out our delicious recipes.")
 
@@ -215,9 +216,9 @@ def display_home():
                 # Display Product Details
                 with col2_inner:
                     st.write(f"### {product_info['name']}")
-                    st.write(f"💲 **Price:** ${product_info['price']:.2f}")
+                    st.write(f"💲 **Price:** LEI {product_info['price']:.2f}")
                     st.write(f"📦 **Stock Available:** {product_info['number_of_products']}")
-                    st.write(f"⏳ **Soonest Expiration Date:** {product_info['soonest_expiration_date']}")
+                    st.write(f"⏳ **Expiration Date:** {product_info['soonest_expiration_date']}")
 
         st.write("---")  # Separator
 
@@ -262,9 +263,9 @@ def display_products():
             # Product Details
             with col2:
                 st.markdown(f"### {product_info['name']}")
-                st.write(f" **Price:** ron{product_info['price']:.2f}")
+                st.write(f" **Price:** LEI {product_info['price']:.2f}")
                 st.write(f"📦 **Stock Available:** {product_info['number_of_products']}")
-                st.write(f"⏳ **Soonest Expiration Date:** {product_info['soonest_expiration_date']}")
+                st.write(f"⏳ **Expiration Date:** {product_info['soonest_expiration_date']}")
 
                 # # Add to Cart Button with spacing
                 # st.markdown(" ")
@@ -278,26 +279,40 @@ def display_products():
     st.write("---")  # Final separator
 
 # Shopping Cart page
+# Shopping Cart page
 def display_cart():
+    import os
+    from datetime import datetime
+
     st.title("🛒 Shopping Cart")
     st.write("Here are the items you've added to your cart:")
 
-    if not st.session_state.cart:
+    # Check if the cart is empty
+    if not st.session_state.get("cart", {}):  # Use get() to avoid errors if 'cart' is not initialized
         st.info("Your cart is currently empty. Add some products to get started!")
         return
 
     total_cost = 0
     discount_threshold_date = datetime.strptime("13/12/2024", "%d/%m/%Y")
-    # Display items in the cart
-    for product, cart_item in list(st.session_state.cart.items()):  # Use list() to safely iterate and modify
-        product_info = next(p for p in data["products"] if p["name"] == product)
-        product_price = product_info["price"]
 
+    # Display items in the cart
+    for product, cart_item in list(st.session_state.cart.items()):  # Safely iterate and modify
+        # Fetch product details
+        product_info = next((p for p in data["products"] if p["name"] == product), None)
+        if not product_info:
+            st.warning(f"Product '{product}' not found in database. Removing from cart.")
+            del st.session_state.cart[product]
+            continue
+
+        product_price = product_info["price"]
         quantity = cart_item["quantity"]
         produce_date_str = cart_item["produce_date"]
         produce_date = datetime.strptime(produce_date_str, "%d/%m/%Y")
+
+        # Apply discount if applicable
         if produce_date < discount_threshold_date:
             product_price *= 0.5
+
         item_total = product_price * quantity
         total_cost += item_total
 
@@ -308,31 +323,29 @@ def display_cart():
 
             # Product Image
             with col1:
-                base_dir = os.path.dirname(os.path.abspath(__file__))  # Get the directory of the current script
                 image_path = os.path.join(os.curdir, product_info["image"])
                 if os.path.exists(image_path):
-                    st.image(image_path, width=80)
+                    st.image(image_path)
                 else:
                     st.image("https://via.placeholder.com/80", caption="Image not available")  # Placeholder image
 
             # Product Details
             with col2:
                 st.write(f"**{product_info['name']}**")
-                st.write(f"Price per unit: ${product_price:.2f}")
+                st.write(f"Price per unit: LEI {product_price:.2f}")
                 st.write(f"Quantity: {quantity}")
-                st.write(f"Expiration Date: {produce_date}")  # Display expiration date
+                st.write(f"Expiration Date: {produce_date.strftime('%d/%m/%Y')}")
                 if produce_date < discount_threshold_date:
-                    st.write(f"Reducere de 50% aplicata")
+                    st.write("**50% Discount Applied**")
 
             # Item Total and Remove Button
             with col3:
-                st.write(f"**Item Total:** ${item_total:.2f}")
+                st.write(f"**Item Total:** LEI {item_total:.2f}")
 
-            # Remove Item Button
             with col4:
                 if st.button("➖ Remove 1", key=f"remove_{product}"):
                     st.session_state.cart[product]["quantity"] -= 1
-                    if st.session_state.cart[product]["quantity"] <= 0:  # If quantity reaches 0, remove from cart
+                    if st.session_state.cart[product]["quantity"] <= 0:  # Remove if quantity reaches 0
                         del st.session_state.cart[product]
                         st.success(f"Removed {product} from the cart.")
                     else:
@@ -341,7 +354,7 @@ def display_cart():
 
     # Total Cost at the Bottom
     st.write("---")  # Final divider
-    st.subheader(f"**Total Cost: ${total_cost:.2f}**")
+    st.subheader(f"**Total Cost: LEI {total_cost:.2f}**")
 
     # Clear Cart Button
     if st.button("🧹 Clear Cart"):
@@ -375,7 +388,8 @@ def display_scanner():
                     # Add product to the cart with the expiration date
                     st.session_state.cart[product_info["name"]] = {
                         "quantity": 1,
-                        "produce_date": produce_date
+                        "produce_date": produce_date,
+                        "price" : product_info["price"]
                     }
 
                 st.success(f"✅ {product_info['name']} has been added to your cart!")
@@ -388,7 +402,7 @@ def display_scanner():
         # Decrement quantities in the JSON data
         for product_name, cart_item in st.session_state.cart.items():
             product_info = next((p for p in data["products"] if p["name"] == product_name), None)
-            sender = Product(product_name, cart_item["quantity"])
+            sender = Product(product_name, cart_item["quantity"], cart_item["price"], cart_item["produce_date"])
             addpurchasetojson(sender.jsonify(), "Marcel.json")
             recalg("Marcel.json", "recipes.json", "recommendations_Marcel.json")
             if product_info:
@@ -443,6 +457,9 @@ def load_purchases():
 #     ax.axis('equal')
 #     st.pyplot(fig)
 
+import plotly.express as px
+import streamlit as st
+
 def most_purchased_products():
     # Assuming data and purchases are loaded elsewhere in your app
     products = data["products"]
@@ -463,13 +480,32 @@ def most_purchased_products():
     fig = px.pie(
         names=list(product_purchases.keys()),
         values=list(product_purchases.values()),
-        title="Most Purchased Products",
-        # hole=0.2,  # Optional: creates a donut chart
-
+        title="Most Purchased"
     )
 
-    # Display the chart in Streamlit
+    # Customize the chart to match the website theme
+    fig.update_layout(
+        title_font=dict(family="sans serif", size=20, color="#333333"),  # Title font
+        font=dict(family="sans serif", color="#333333"),  # General font
+        paper_bgcolor="#eaf4e1",  # Light green background
+        plot_bgcolor="#eaf4e1",  # Light green plot background
+        # margin=dict(t=40, b=40, l=40, r=40),  # Adjust margins for better fit
+        showlegend=True,  # Show the legend
+        height=400,  # Set custom height for the chart
+        width=800,   # Set custom width for the chart
+    )
+
+    # Update the colors for the chart slices
+    fig.update_traces(
+        marker=dict(
+            colors=['#d0e6c1', '#a1c6a1', '#7bbd7b', '#5fa65f', '#4b9b4b'],  # Custom colors based on your theme
+        )
+    )
+
+    # Display the chart in Streamlit, ensuring it uses full container width
     st.plotly_chart(fig, use_container_width=True)
+
+
 
 # Sidebar Navigation with Icons
 if st.session_state.logged_in:

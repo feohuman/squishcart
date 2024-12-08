@@ -1,96 +1,77 @@
 {
     "username": "Marcel",
     "history": [
-        {},
-        {
-            "name": "Eggs",
-            "quantity": 8,
-            "price": 0,
-            "expiration_date": null
-        },
-        {
-            "name": "Eggs",
-            "quantity": 7,
-            "price": 0,
-            "expiration_date": null
-        },
-        {
-            "name": "Milk",
-            "quantity": 8,
-            "price": 0,
-            "expiration_date": null
-        },
         {
             "name": "Flour",
-            "quantity": 39,
-            "price": 0,
-            "expiration_date": null
+            "quantity": 1,
+            "price": 6.99,
+            "expiration_date": "23/12/2024"
         },
         {
-            "name": "Eggs",
+            "name": "Sugar",
             "quantity": 1,
-            "price": 0,
-            "expiration_date": null
-        },
-        {
-            "name": "Milk",
-            "quantity": 1,
-            "price": 0,
-            "expiration_date": null
+            "price": 10.0,
+            "expiration_date": "23/12/2024"
         },
         {
             "name": "Flour",
             "quantity": 1,
-            "price": 0,
-            "expiration_date": null
+            "price": 6.99,
+            "expiration_date": "03/03/2024"
         },
         {
-            "name": "Milk",
+            "name": "Flour",
             "quantity": 2,
-            "price": 0,
-            "expiration_date": null
+            "price": 6.99,
+            "expiration_date": "03/03/2024"
+        },
+        {
+            "name": "Flour",
+            "quantity": 2,
+            "price": 6.99,
+            "expiration_date": "03/03/2024"
+        },
+        {
+            "name": "Ketchup",
+            "quantity": 2,
+            "price": 12.0,
+            "expiration_date": "03/03/2024"
         },
         {
             "name": "Flour",
             "quantity": 1,
-            "price": 0,
-            "expiration_date": null
+            "price": 6.99,
+            "expiration_date": "05/05/2025"
         },
         {
-            "name": "Ketchup",
-            "quantity": 5,
-            "price": 0,
-            "expiration_date": null
+            "name": "Eggs",
+            "quantity": 1,
+            "price": 12.99,
+            "expiration_date": "05/05/2025"
         },
         {
-            "name": "Ketchup",
-            "quantity": 6,
-            "price": 0,
-            "expiration_date": null
+            "name": "Eggs",
+            "quantity": 1,
+            "price": 12.99,
+            "expiration_date": "05/05/2025"
         },
         {
-            "name": "Ketchup",
-            "quantity": 8,
-            "price": 0,
-            "expiration_date": null
+            "name": "Flour",
+            "quantity": 1,
+            "price": 6.99,
+            "expiration_date": "05/05/2025"
         },
         {
-            "name": "Ketchup",
-            "quantity": 6,
-            "price": 0,
-            "expiration_date": null
+            "name": "Eggs",
+            "quantity": 3,
+            "price": 12.99,
+            "expiration_date": "05/05/2025"
         },
         {
-            "name": "Ketchup",
-            "quantity": 5,
-            "price": 0,
-            "expiration_date": null
-        },
-        {
-            "name": "Ketchup",
-            "quantity": 6,
-            "price": 0,
-            "expiration_date": null
+            "name": "Flour",
+            "quantity": 1,
+            "price": 6.99,
+            "expiration_date": "05/05/2025"
         }
     ]
 }
