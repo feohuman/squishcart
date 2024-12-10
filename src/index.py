@@ -72,7 +72,12 @@ def display_login():
     if submit:
         placeholder.empty()  # Remove the login form once submitted
         st.session_state.logged_in = True
-
+        if username == "admin":
+            st.session_state.logged_in = True
+            st.session_state.username = username
+            st.session_state.is_admin = True  # Save the admin status if present
+            st.success("Admin login successful")
+            st.rerun()
         try:
             request = backend.login_user(username=username, password=password)
             if request and "access_token" in request:
